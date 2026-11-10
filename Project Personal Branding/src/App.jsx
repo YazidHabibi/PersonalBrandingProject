@@ -12,9 +12,12 @@ import ContactFooter from './components/ContactFooter.jsx';
 
 const INTERACTIVE_SELECTOR = 'a, button, .pill, .cursor-grow';
 const CARD_SELECTOR = '.bento-card, .value-card, .project-card';
-const WORK_REVEAL_MS = 300;
-const WORK_END_MS = 750;
-const SAFETY_MS = 2200;
+const BUILD_MS = 600;
+const SAFETY_MS = 1500;
+const FORCE_MS = 2500;
+const GHOST_NAMES = ['Flutter', 'React', 'Dart', 'SQL', 'Python', 'Data'];
+const GHOST_COLORS = ['#D4623F', '#3B6EA8', '#2F5D41', '#B07A10', '#7A4FA0', '#C2477A'];
+
 
 export default function App() {
   useEffect(() => {
@@ -50,12 +53,23 @@ export default function App() {
     };
     document.addEventListener('click', handleAnchor);
 
-        const ghosts = [];
+    const ghosts = [];
     const buildQueue = [];
     const revealNow = (el, delay = 0) => {
       el.style.setProperty('--d', `${delay}ms`);
       el.classList.add('in');
       setTimeout(() => el.style.removeProperty('--d'), 1600);
+    };
+        const finishJob = (g) => {
+      const el = g.job.el;
+      revealNow(el);
+      el.style.transition = '';
+      el.style.opacity = '';
+      el.style.transform = '';
+      el.style.clipPath = '';
+      g.sel.style.opacity = '0';
+      g.job = null;
+      g.phase = 'idle';
     };
     const revealObserver = new IntersectionObserver(
       (entries) => {
@@ -107,10 +121,15 @@ export default function App() {
       if (!reduceMotion) {
         for (let i = 0; i < GHOST_COUNT; i++) {
           const el = document.createElement('div');
+          const color = GHOST_COLORS[i % GHOST_COLORS.length];
           el.className = 'cursor-ghost';
+          el.style.setProperty('--gc', color);
+          el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2l7 19 3-8 8-3z"/></svg><span class="ghost-name">${GHOST_NAMES[i % GHOST_NAMES.length]}</span>`;
           document.body.appendChild(el);
           const sel = document.createElement('div');
           sel.className = 'ghost-select';
+          sel.style.setProperty('--gc', color);
+          document.body.appendChild(sel);
           document.body.appendChild(sel);
           const bx = Math.random() * window.innerWidth;
           const by = Math.random() * window.innerHeight;
@@ -122,7 +141,6 @@ export default function App() {
             job: null,
             phase: 'idle',
             t0: 0,
-            revealed: false,
             bx,
             by,
             ax: 30 + Math.random() * 60,
@@ -178,32 +196,38 @@ export default function App() {
         ghosts.forEach((g) => {
           let tx = g.bx + Math.cos(now * g.sp + g.ph) * g.ax;
           let ty = g.by + Math.sin(now * g.sp * 1.3 + g.ph) * g.ay - push * g.depth;
+          let k = 0.05;
           if (g.job) {
-            const r = g.job.el.getBoundingClientRect();
-            tx = r.left + 16;
-            ty = r.top + 16;
-            if (g.phase === 'fly' && Math.hypot(tx - g.x, ty - g.y) < 14) {
-              g.phase = 'work';
-              g.t0 = now;
+            const el = g.job.el;
+            const r = el.getBoundingClientRect();
+            k = 0.2;
+            if (g.phase === 'fly') {
+              tx = r.left + 6;
+              ty = r.top + 6;
+              if (Math.hypot(tx - g.x, ty - g.y) < 16) {
+                g.phase = 'work';
+                g.t0 = now;
+                el.style.transition = 'none';
+                el.style.opacity = '1';
+                el.style.transform = 'none';
+              }
             }
             if (g.phase === 'work') {
+              const p = Math.min(1, (now - g.t0) / BUILD_MS);
+              const e = 1 - Math.pow(1 - p, 3);
+              const hide = `${(1 - e) * 100}%`;
+              el.style.clipPath = `inset(0 ${hide} ${hide} 0)`;
+              tx = r.left + e * r.width;
+              ty = r.top + e * r.height;
+              k = 0.4;
               g.sel.style.transform = `translate(${r.left - 8}px, ${r.top - 8}px)`;
               g.sel.style.width = `${r.width + 16}px`;
               g.sel.style.height = `${r.height + 16}px`;
               g.sel.style.opacity = '1';
-              if (!g.revealed && now - g.t0 > WORK_REVEAL_MS) {
-                g.revealed = true;
-                revealNow(g.job.el);
-              }
-              if (now - g.t0 > WORK_END_MS) {
-                g.sel.style.opacity = '0';
-                g.job = null;
-                g.revealed = false;
-                g.phase = 'idle';
-              }
+              if (p >= 1) finishJob(g);
             }
+            if (g.job && now - g.job.since > FORCE_MS) finishJob(g);
           }
-          const k = g.job ? 0.14 : 0.05;
           g.x += (tx - g.x) * k;
           g.y += (ty - g.y) * k;
           g.el.style.transform = `translate(${g.x}px, ${g.y}px)`;

@@ -120,14 +120,35 @@ button {
   position: fixed;
   top: 0;
   left: 0;
-  width: 12px;
-  height: 17px;
-  background: var(--ice);
-  clip-path: polygon(0% 0%, 0% 85%, 22% 66%, 38% 100%, 55% 92%, 40% 60%, 70% 60%);
-  opacity: 0.45;
   pointer-events: none;
   z-index: 1050;
   will-change: transform;
+}
+
+.cursor-ghost svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.cursor-ghost svg path {
+  fill: var(--gc, var(--accent));
+  stroke: #fff;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.ghost-name {
+  position: absolute;
+  top: 22px;
+  left: 16px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gc, var(--accent));
+  color: #fff;
+  font: 600 11px/1.5 'JetBrains Mono', monospace;
+  white-space: nowrap;
 }
 
 .scroll-progress {
@@ -291,8 +312,6 @@ button {
   border-radius: 999px;
   border: 1px solid rgba(157, 191, 163, 0.25);
   background: rgba(30, 43, 37, 0.9);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 16px 40px rgba(30, 43, 37, 0.25);
 }
 
@@ -1499,12 +1518,12 @@ button {
   left: 0;
   width: 0;
   height: 0;
-  border: 2px dashed var(--accent, var(--slate-blue));
-  border-radius: 10px;
-  background: rgba(212, 98, 63, 0.06);
+  border: 2px solid var(--gc, var(--accent));
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--gc, #D4623F) 8%, transparent);
   pointer-events: none;
   opacity: 0;
   z-index: 1049;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.2s ease;
   will-change: transform, width, height;
 }
