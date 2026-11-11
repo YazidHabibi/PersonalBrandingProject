@@ -1,7 +1,7 @@
 export const profile = {
   name: 'Yazid Habibi Tambunan',
-  subtitle: 'Siswa SMA Kelas 12 · Pembelajar Teknologi & Ingin Mendalami Sains Data',
-  tagline: 'CATATAN PORTOFOLIO & EKSPLORASI VOL. 02',
+  subtitle: 'Siswa SMA kelas 12 yang belajar membangun aplikasi dan ingin mendalami sains data.',
+  tagline: 'Catatan portofolio dan eksplorasi, vol. 02',
   marqueeText: 'BELAJAR • EKSPLORASI • MEMBANGUN • SAINS DATA',
   email: 'yazid2505@student.abudzar.sch.id',
   github: 'https://github.com/YazidHabibi',
@@ -152,10 +152,10 @@ export const projects = [
     icon: 'AppWindow',
     title: 'Aplikasi Waktu Sholat',
     subtitle: 'Jadwal sholat harian yang akurat sesuai lokasi Anda.',
-    desc: 'Aplikasi web yang menampilkan waktu sholat lima waktu berdasarkan lokasi pengguna, lengkap dengan hitung mundur menuju waktu sholat berikutnya.',
+    desc: 'Aplikasi yang menampilkan waktu sholat lima waktu berdasarkan lokasi pengguna, lengkap dengan hitung mundur menuju waktu sholat berikutnya.',
     tags: ['Dart', 'Flutter', 'Proyek Sekolah'],
     github: 'https://github.com/YazidHabibi/ProjectAkhirTahun',
-    metric: 'Integrasi Data Kegiatan',
+    metric: 'Jadwal & Hitung Mundur',
     accent: 'ice',
   },
 ];
@@ -201,4 +201,4 @@ export const skillGroups = [
 export const contact = {
   headline: 'MARI BERDISKUSI & BERKOLABORASI',
   subtext: 'Terbuka untuk diskusi proyek, belajar bersama, atau sekadar bertukar ide tentang teknologi dan data.',
-};
+};  

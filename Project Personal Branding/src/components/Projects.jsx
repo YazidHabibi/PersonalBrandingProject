@@ -1,108 +1,99 @@
-import { useRef } from 'react';
-import { ExternalLink } from "lucide-react";
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  LayoutDashboard, 
-  Wallet, 
-  Activity, 
-  FileText, 
+import { useRef, useState } from 'react';
+import {
+  ExternalLink,
+  LayoutDashboard,
+  Wallet,
+  Activity,
+  FileText,
   FolderKanban,
-  AppWindow 
+  AppWindow,
 } from 'lucide-react';
 import { projects } from '../data/portfolioData.js';
 import GithubIcon from './GithubIcon.jsx';
 
 // Daftarkan semua ikon proyek kamu di sini
-const icons = { 
-  Wallet, 
-  Activity, 
-  FileText, 
-  FolderKanban, 
+const icons = {
+  Wallet,
+  Activity,
+  FileText,
+  FolderKanban,
   LayoutDashboard,
-  AppWindow
+  AppWindow,
 };
 
-export default function Projects() {
-  const railRef = useRef(null);
+const colors = ['c-blue', 'c-sun', 'c-mint', 'c-rose'];
 
-  const scrollRail = (direction) => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const card = rail.querySelector('.project-card');
-    const distance = card ? card.offsetWidth + 24 : 400;
-    rail.scrollBy({ left: direction * distance, behavior: 'smooth' });
+export default function Projects() {
+  const previewRef = useRef(null);
+  const [active, setActive] = useState(null);
+
+  const movePreview = (e) => {
+    const el = previewRef.current;
+    if (!el) return;
+    const x = Math.min(e.clientX + 28, window.innerWidth - 264);
+    const y = Math.min(e.clientY + 28, window.innerHeight - 184);
+    el.style.transform = `translate(${x}px, ${y}px)`;
   };
 
+  const current = active !== null ? projects[active] : null;
+  const ActiveIcon = current ? icons[current.icon] : null;
+
   return (
-    <section id="proyek" className="section">
-      <div className="container">
-        <div className="project-header reveal">
-          <div>
-            <p className="eyebrow">Bab IV — Proyek & Eksplorasi</p>
-            <h2 className="section-title">Studi Kasus Latihan</h2>
-          </div>
-          <div className="project-controls">
-            <button type="button" className="round-btn" onClick={() => scrollRail(-1)} aria-label="Proyek sebelumnya">
-              <ArrowLeft size={18} />
-            </button>
-            <button type="button" className="round-btn" onClick={() => scrollRail(1)} aria-label="Proyek berikutnya">
-              <ArrowRight size={18} />
-            </button>
-          </div>
+    <section id="proyek" className="sx">
+      <div className="wrap">
+        <div className="reveal">
+          <p className="stag c-rose">
+            <i />
+            <b>Bab IV</b>
+            <span>Proyek & Eksplorasi</span>
+          </p>
+          <h2 className="h2">Studi Kasus Latihan</h2>
         </div>
+
+        <ul className="idx" onMouseMove={movePreview} onMouseLeave={() => setActive(null)}>
+          {projects.map((project, index) => (
+            <li
+              key={project.title}
+              className={`idx-row reveal ${colors[index % colors.length]}`}
+              onMouseEnter={() => setActive(index)}
+            >
+              <div className="idx-side">
+                <span className="idx-metric">{project.metric}</span>
+                <span className="idx-tags">{project.tags.join(', ')}</span>
+              </div>
+
+              <div className="idx-main">
+                <h3 className="idx-title">{project.title}</h3>
+                <p className="idx-sub">{project.subtitle}</p>
+                <p className="idx-desc">{project.desc}</p>
+              </div>
+
+              <div className="idx-links">
+                <a href={project.github} target="_blank" rel="noreferrer" className="idx-link">
+                  <GithubIcon size={15} /> GitHub
+                </a>
+                {project.demo ? (
+                  <a href={project.demo} target="_blank" rel="noreferrer" className="idx-link idx-link-main">
+                    <ExternalLink size={15} /> Lihat Project
+                  </a>
+                ) : (
+                  <span className="idx-link idx-link-off" aria-disabled="true">
+                    <ExternalLink size={15} /> Segera Hadir
+                  </span>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div ref={railRef} className="project-rail">
-  {projects.map((project) => {
-    const Icon = icons[project.icon];
-    return (
-      <article key={project.title} className="project-card reveal">
-        <div className="project-visual">
-          <span className="project-metric">{project.metric}</span>
-          <Icon size={64} className="project-visual-icon" />
-        </div>
-
-        <div className="project-body">
-          <h3 className="project-title">{project.title}</h3>
-          <p className="project-subtitle">{project.subtitle}</p>
-          <p className="project-desc">{project.desc}</p>
-
-          <div className="tag-list">
-            {project.tags.map((tag) => (
-              <span key={tag} className="tag">{tag}</span>
-            ))}
-          </div>
-
-          <div className="project-actions">
-            <a
-              href={project.github}
-              target="_blank"
-              rel="noreferrer"
-              className="project-btn project-btn--ghost"
-            >
-              <GithubIcon size={16} /> GitHub
-            </a>
-
-            {project.demo ? (
-              <a
-                href={project.demo}
-                target="_blank"
-                rel="noreferrer"
-                className="project-btn project-btn--primary"
-              >
-                <ExternalLink size={16} /> Lihat Project
-              </a>
-            ) : (
-              <span className="project-btn project-btn--disabled" aria-disabled="true">
-                <ExternalLink size={16} /> Segera Hadir
-              </span>
-            )}
-          </div>
-        </div>
-            </article>
-          );
-        })}
+      <div
+        ref={previewRef}
+        className={`idx-preview${current ? ` on ${colors[active % colors.length]}` : ''}`}
+        aria-hidden="true"
+      >
+        {ActiveIcon && <ActiveIcon size={64} strokeWidth={1.6} />}
+        {current && <span>{current.metric}</span>}
       </div>
     </section>
   );

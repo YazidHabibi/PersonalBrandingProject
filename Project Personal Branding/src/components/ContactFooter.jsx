@@ -1,14 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { profile, contact } from '../data/portfolioData.js';
 import GithubIcon from './GithubIcon.jsx';
-
-const marqueeGroup = (
-  <div className="marquee-group">
-    <span>{contact.headline}</span>
-    <span className="separator">•</span>
-  </div>
-);
 
 export default function ContactFooter() {
   const [copied, setCopied] = useState(false);
@@ -28,39 +21,45 @@ export default function ContactFooter() {
   };
 
   return (
-    <footer id="kontak" className="section contact-section">
-      <div className="container">
-        <p className="eyebrow reveal">Bab VII — Kontak & Footer</p>
+    <footer id="kontak" className="ft">
+      <div className="wrap">
+        <p className="stag c-sun reveal">
+          <i />
+          <b>Bab VII</b>
+          <span>Kontak</span>
+        </p>
       </div>
 
-      <div className="marquee contact-marquee" aria-label={contact.headline}>
-        <div className="marquee-track">
+      <div className="ft-marq" aria-label={contact.headline}>
+        <div className="ft-track">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="marquee-group">
-              <span>{contact.headline}</span>
-              <span className="separator">•</span>
-            </div>
+            <Fragment key={i}>
+              <div className="ft-group" aria-hidden={i > 0}>
+                <span>{contact.headline}</span>
+                <i />
+              </div>
+            </Fragment>
           ))}
         </div>
       </div>
 
-      <div className="container">
-        <div className="contact-actions reveal">
-          <p className="section-lead">{contact.subtext}</p>
-          <button type="button" className="copy-pill" onClick={copyEmail}>
+      <div className="wrap">
+        <div className="ft-act reveal">
+          <p className="lead">{contact.subtext}</p>
+          <button type="button" className="copy" onClick={copyEmail}>
             {profile.email}
-            <span className="copy-pill-state">
+            <span className="copy-state">
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? 'Tersalin' : 'Klik untuk salin'}
             </span>
           </button>
-          <a href={profile.github} target="_blank" rel="noreferrer" className="github-link">
+          <a href={profile.github} target="_blank" rel="noreferrer" className="pill pill-line">
             <GithubIcon size={18} />
             {profile.githubLabel}
           </a>
         </div>
 
-        <div className="footer-bottom">
+        <div className="ft-bottom">
           <span>© {new Date().getFullYear()} {profile.name}. Hak cipta dilindungi.</span>
           <span>Dibuat dengan rasa ingin tahu dan proses belajar.</span>
         </div>

@@ -1,37 +1,35 @@
-import { Compass, Handshake, Repeat } from 'lucide-react';
 import { about } from '../data/portfolioData.js';
 
-const icons = { Compass, Repeat, Handshake };
+const colors = ['c-blue', 'c-sun', 'c-mint'];
 
 export default function About() {
   return (
-    <section id="tentang" className="section section-linen">
-      <div className="container">
-        <div className="about-grid">
-          <div className="reveal">
-            <p className="eyebrow">Bab I — Perjalanan & Filosofi</p>
-            <h2 className="section-title">{about.heading}</h2>
-          </div>
-          <div className="about-copy reveal">
+    <section id="tentang" className="sx sx-white">
+      <div className="wrap">
+        <div className="reveal">
+          <p className="stag c-blue">
+            <i />
+            <b>Bab I</b>
+            <span>Perjalanan & Filosofi</span>
+          </p>
+          <h2 className="h2 ab-h2">{about.heading}</h2>
+        </div>
+
+        <div className="ab-body">
+          <aside className="ab-notes">
+            {about.values.map((value, index) => (
+              <div key={value.title} className={`ab-note reveal ${colors[index % colors.length]}`}>
+                <h3>{value.title}</h3>
+                <p>{value.desc}</p>
+              </div>
+            ))}
+          </aside>
+
+          <div className="ab-copy reveal">
             {about.paragraphs.map((text) => (
               <p key={text}>{text}</p>
             ))}
           </div>
-        </div>
-
-        <div className="values-grid">
-          {about.values.map((value) => {
-            const Icon = icons[value.icon];
-            return (
-              <article key={value.title} className="value-card reveal">
-                <span className="value-icon">
-                  <Icon size={24} />
-                </span>
-                <h3 className="value-title">{value.title}</h3>
-                <p className="value-desc">{value.desc}</p>
-              </article>
-            );
-          })}
         </div>
       </div>
     </section>

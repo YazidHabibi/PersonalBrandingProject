@@ -1,49 +1,43 @@
-import { FolderKanban, Puzzle, Users } from 'lucide-react';
 import { journal } from '../data/portfolioData.js';
-
-const icons = { Users, FolderKanban, Puzzle };
 
 export default function JournalExperience() {
   return (
-    <section id="pengalaman" className="section">
-      <div className="container">
+    <section id="pengalaman" className="sx sx-white">
+      <div className="wrap">
         <div className="reveal">
-          <p className="eyebrow">Bab V — Catatan Pengalaman OSIS</p>
-          <h2 className="section-title">Belajar Memimpin di Lingkungan Sekolah</h2>
+          <p className="stag c-sun">
+            <i />
+            <b>Bab V</b>
+            <span>Catatan Pengalaman OSIS</span>
+          </p>
+          <h2 className="h2">Belajar Memimpin di Lingkungan Sekolah</h2>
         </div>
 
-        <article className="journal-paper reveal">
-          <div className="journal-meta">
-            <span>{journal.kicker}</span>
-            <span>·</span>
-            <span>Organisasi Siswa</span>
-          </div>
-          <h3 className="journal-title">{journal.title}</h3>
-          <p className="journal-role">{journal.role}</p>
-
-          <div className="journal-body">
+        <article className="jn">
+          <div className="jn-text reveal">
             {journal.paragraphs.map((text) => (
               <p key={text}>{text}</p>
             ))}
           </div>
 
-          <div className="journal-takeaways">
-            {journal.takeaways.map((item) => {
-              const Icon = icons[item.icon];
-              return (
-                <div key={item.title} className="takeaway">
-                  <span className="takeaway-icon">
-                    <Icon size={20} />
-                  </span>
-                  <div>
-                    <p className="takeaway-title">{item.title}</p>
-                    <p className="takeaway-text">{item.text}</p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="jn-aside reveal">
+            <div className="jn-meta">
+              <span className="chip c-sun">{journal.kicker}</span>
+              <span className="chip">Organisasi Siswa</span>
+            </div>
+            <h3 className="jn-title">{journal.title}</h3>
+            <p className="jn-role">{journal.role}</p>
           </div>
         </article>
+
+        <dl className="jn-dl">
+          {journal.takeaways.map((item) => (
+            <div key={item.title} className="jn-row reveal">
+              <dt>{item.title}</dt>
+              <dd>{item.text}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   );

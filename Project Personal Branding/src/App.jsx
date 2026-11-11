@@ -11,12 +11,12 @@ import SkillsMatrix from './components/SkillsMatrix.jsx';
 import ContactFooter from './components/ContactFooter.jsx';
 
 const INTERACTIVE_SELECTOR = 'a, button, .pill, .cursor-grow';
-const CARD_SELECTOR = '.bento-card, .value-card, .project-card';
+const CARD_SELECTOR = '.bcard, .pcard';
 const BUILD_MS = 600;
 const SAFETY_MS = 1500;
 const FORCE_MS = 2500;
 const GHOST_NAMES = ['Flutter', 'React', 'Dart', 'SQL', 'Python', 'Data'];
-const GHOST_COLORS = ['#D4623F', '#3B6EA8', '#2F5D41', '#B07A10', '#7A4FA0', '#C2477A'];
+const GHOST_COLORS = ['#3355FF', '#0D1530', '#E0457B', '#0E9F78', '#7A4FD6', '#D9480F'];
 
 
 export default function App() {
@@ -60,7 +60,7 @@ export default function App() {
       el.classList.add('in');
       setTimeout(() => el.style.removeProperty('--d'), 1600);
     };
-        const finishJob = (g) => {
+    const finishJob = (g) => {
       const el = g.job.el;
       revealNow(el);
       el.style.transition = '';
@@ -129,7 +129,6 @@ export default function App() {
           const sel = document.createElement('div');
           sel.className = 'ghost-select';
           sel.style.setProperty('--gc', color);
-          document.body.appendChild(sel);
           document.body.appendChild(sel);
           const bx = Math.random() * window.innerWidth;
           const by = Math.random() * window.innerHeight;

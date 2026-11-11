@@ -1,67 +1,62 @@
-import { useEffect, useRef, useState } from 'react';
 import { skillGroups } from '../data/portfolioData.js';
 
+const colors = ['c-blue', 'c-mint', 'c-rose', 'c-sun'];
+
 function SkillRow({ skill }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.4 }
+  if (skill.learning) {
+    return (
+      <div className="st-row">
+        <span className="st-name">{skill.name}</span>
+        <span className="st-gap" />
+        <span className="st-val is-learning">
+          <i />
+          Sedang dipelajari
+        </span>
+      </div>
     );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  }
 
-  let width = '0%';
-  if (skill.learning) width = '40%';
-  else if (visible) width = `${skill.level}%`;
+  const filled = Math.round(skill.level / 10);
 
   return (
-    <div ref={ref}>
-      <div className="skill-head">
-        <span className="skill-name">{skill.name}</span>
-        {skill.learning ? (
-          <span className="skill-value">Sedang Dipelajari</span>
-        ) : (
-          <span className="skill-value" data-count={skill.level} data-suffix="%">
-            {`${skill.level}%`}
-          </span>
-        )}
-      </div>
-      <div className="skill-bar">
-        <span className={`skill-fill${skill.learning ? ' is-learning' : ''}`} style={{ width }} />
-      </div>
+    <div className="st-row">
+      <span className="st-name">{skill.name}</span>
+      <span className="st-gap" />
+      <span className="st-ticks" aria-hidden="true">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <i key={i} className={i < filled ? 'on' : ''} />
+        ))}
+      </span>
+      <span className="st-val" data-count={skill.level} data-suffix="%">
+        {`${skill.level}%`}
+      </span>
     </div>
   );
 }
 
 export default function SkillsMatrix() {
   return (
-    <section id="keahlian" className="section section-linen">
-      <div className="container">
+    <section id="keahlian" className="sx sx-tint">
+      <div className="wrap">
         <div className="reveal">
-          <p className="eyebrow">Bab VI — Peta Keahlian</p>
-          <h2 className="section-title">Tingkat Kemampuan Saat Ini</h2>
+          <p className="stag c-blue">
+            <i />
+            <b>Bab VI</b>
+            <span>Peta Keahlian</span>
+          </p>
+          <h2 className="h2">Tingkat Kemampuan Saat Ini</h2>
         </div>
 
-        <div className="skills-grid">
-          {skillGroups.map((group) => (
-            <div key={group.title} className="skill-category reveal">
-              <h3 className="skill-category-title">{group.title}</h3>
-              <div className="skill-list">
-                {group.items.map((skill) => (
-                  <SkillRow key={skill.name} skill={skill} />
-                ))}
-              </div>
+        <div className="st">
+          {skillGroups.map((group, index) => (
+            <div key={group.title} className={`st-group reveal ${colors[index % colors.length]}`}>
+              <h3>
+                <i />
+                {group.title}
+              </h3>
+              {group.items.map((skill) => (
+                <SkillRow key={skill.name} skill={skill} />
+              ))}
             </div>
           ))}
         </div>

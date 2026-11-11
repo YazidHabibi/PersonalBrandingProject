@@ -23,16 +23,16 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="side-nav" aria-label="Navigasi utama">
+    <nav className="dock" aria-label="Navigasi utama">
       {navItems.map((item) => (
         <a
           key={item.id}
           href={`#${item.id}`}
           aria-label={item.label}
-          className={`side-nav-item${activeId === item.id ? ' is-active' : ''}`}
+          className={`dock-item${activeId === item.id ? ' is-active' : ''}`}
         >
-          <span className="side-nav-label">{item.label}</span>
-          <span className="side-nav-dot" />
+          <span className="dock-dot" />
+          <span className="dock-label">{item.label}</span>
         </a>
       ))}
     </nav>
