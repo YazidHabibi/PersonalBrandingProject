@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ExternalLink,
   LayoutDashboard,
@@ -22,6 +22,44 @@ const icons = {
 };
 
 const colors = ['c-blue', 'c-sun', 'c-mint', 'c-rose'];
+
+// Deskripsi dipotong 3 baris. Tombol "Baca selengkapnya" hanya muncul kalau teksnya memang terpotong.
+function ProjectDesc({ text }) {
+  const ref = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [clipped, setClipped] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const check = () => {
+      if (!open) setClipped(el.scrollHeight > el.clientHeight + 1);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(check);
+    return () => ro.disconnect();
+  }, [text, open]);
+
+  return (
+    <>
+      <p ref={ref} className={`pj-desc${open ? ' is-open' : ''}`}>
+        {text}
+      </p>
+      {(clipped || open) && (
+        <button
+          type="button"
+          className="pj-more"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? 'Tutup' : 'Baca selengkapnya'}
+        </button>
+      )}
+    </>
+  );
+}
 
 export default function Projects() {
   const previewRef = useRef(null);
@@ -50,40 +88,57 @@ export default function Projects() {
           <h2 className="h2">Studi Kasus Latihan</h2>
         </div>
 
-        <ul className="idx" onMouseMove={movePreview} onMouseLeave={() => setActive(null)}>
-          {projects.map((project, index) => (
-            <li
-              key={project.title}
-              className={`idx-row reveal ${colors[index % colors.length]}`}
-              onMouseEnter={() => setActive(index)}
-            >
-              <div className="idx-side">
-                <span className="idx-metric">{project.metric}</span>
-                <span className="idx-tags">{project.tags.join(', ')}</span>
-              </div>
-
-              <div className="idx-main">
-                <h3 className="idx-title">{project.title}</h3>
-                <p className="idx-sub">{project.subtitle}</p>
-                <p className="idx-desc">{project.desc}</p>
-              </div>
-
-              <div className="idx-links">
-                <a href={project.github} target="_blank" rel="noreferrer" className="idx-link">
-                  <GithubIcon size={15} /> GitHub
-                </a>
-                {project.demo ? (
-                  <a href={project.demo} target="_blank" rel="noreferrer" className="idx-link idx-link-main">
-                    <ExternalLink size={15} /> Lihat Project
-                  </a>
-                ) : (
-                  <span className="idx-link idx-link-off" aria-disabled="true">
-                    <ExternalLink size={15} /> Segera Hadir
+        <ul className="pj" onMouseMove={movePreview} onMouseLeave={() => setActive(null)}>
+          {projects.map((project, index) => {
+            const Icon = icons[project.icon] || FolderKanban;
+            return (
+              <li
+                key={project.title}
+                className={`pcard reveal ${colors[index % colors.length]}`}
+                onMouseEnter={() => setActive(index)}
+                onMouseLeave={() => setActive((a) => (a === index ? null : a))}
+              >
+                <div className="pj-top">
+                  <span className="ico">
+                    <Icon size={24} strokeWidth={1.8} />
                   </span>
-                )}
-              </div>
-            </li>
-          ))}
+                  <span className="pj-metric">{project.metric}</span>
+                </div>
+
+                <div className="pj-body">
+                  <h3 className="pj-title">{project.title}</h3>
+                  <p className="pj-sub">{project.subtitle}</p>
+                  <ProjectDesc text={project.desc} />
+
+                  <ul className="pj-tags">
+                    {project.tags.map((tag) => (
+                      <li key={tag}>{tag}</li>
+                    ))}
+                  </ul>
+
+                  <div className="idx-links pj-links">
+                    <a href={project.github} target="_blank" rel="noreferrer" className="idx-link">
+                      <GithubIcon size={15} /> GitHub
+                    </a>
+                    {project.demo ? (
+                      <a
+                        href={project.demo}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="idx-link idx-link-main"
+                      >
+                        <ExternalLink size={15} /> Lihat Project
+                      </a>
+                    ) : (
+                      <span className="idx-link idx-link-off" aria-disabled="true">
+                        <ExternalLink size={15} /> Segera Hadir
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

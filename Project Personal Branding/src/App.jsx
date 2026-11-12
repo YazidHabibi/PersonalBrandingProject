@@ -12,6 +12,12 @@ import ContactFooter from './components/ContactFooter.jsx';
 
 const INTERACTIVE_SELECTOR = 'a, button, .pill, .cursor-grow';
 const CARD_SELECTOR = '.bcard, .pcard';
+// Pengaturan cepat -- ubah true/false untuk mencoba:
+const ENABLE_GHOSTS = true; // ghost yang "membangun" website
+const CUSTOM_CURSOR = false; // false = pakai cursor asli browser (tanpa dot & trail)
+const ORBIT_R = 46; // jari-jari lingkaran ghost di sekitar cursor (px)
+const ORBIT_R_HOVER = 66; // lebih lebar saat cursor di atas link/tombol, supaya tidak menutupinya
+const GATHER_DELAY_MS = 900; // jeda di dasar halaman sebelum ghost mulai mengitari cursor
 const BUILD_MS = 600;
 const SAFETY_MS = 1500;
 const FORCE_MS = 2500;
@@ -55,6 +61,45 @@ export default function App() {
 
     const ghosts = [];
     const buildQueue = [];
+
+    // --- State untuk "ghost mengitari cursor asli" ---
+    let orbiting = false;
+    let armed = true; // boleh mengitari lagi hanya setelah user scroll menjauh dari dasar
+    let atBottom = false;
+    let idleSince = 0;
+    let releasedAt = 0;
+    let hoverUI = false;
+    const setNames = (visible) => {
+      ghosts.forEach((g) => {
+        const n = g.el.querySelector('.ghost-name');
+        if (!n) return;
+        n.style.transition = 'opacity 0.25s ease';
+        n.style.opacity = visible ? '' : '0';
+      });
+    };
+    const startOrbit = () => {
+      orbiting = true;
+      armed = false;
+      setNames(false); // label nama disembunyikan sementara supaya tidak menutupi teks
+    };
+    const release = () => {
+      if (!orbiting) return;
+      orbiting = false;
+      releasedAt = performance.now();
+      setNames(true);
+      // tiap ghost dapat titik melayang baru -> bubar ke segala arah
+      ghosts.forEach((g) => {
+        g.bx = Math.random() * window.innerWidth;
+        g.by = Math.random() * window.innerHeight;
+      });
+    };
+    const onClick = () => release();
+    const onScrollState = () => {
+      const fromBottom = lenis.limit - lenis.scroll;
+      atBottom = fromBottom < 80;
+      // Tidak ada lepas otomatis; hanya klik yang melepas.
+      if (fromBottom > 300) armed = true;
+    };
     const revealNow = (el, delay = 0) => {
       el.style.setProperty('--d', `${delay}ms`);
       el.classList.add('in');
@@ -108,10 +153,14 @@ export default function App() {
       }
     };
     const onOver = (e) => {
-      if (dot && e.target.closest(INTERACTIVE_SELECTOR)) dot.classList.add('hovering');
+      if (!e.target.closest(INTERACTIVE_SELECTOR)) return;
+      hoverUI = true;
+      if (dot) dot.classList.add('hovering');
     };
     const onOut = (e) => {
-      if (dot && e.target.closest(INTERACTIVE_SELECTOR)) dot.classList.remove('hovering');
+      if (!e.target.closest(INTERACTIVE_SELECTOR)) return;
+      hoverUI = false;
+      if (dot) dot.classList.remove('hovering');
     };
     const TRAIL_COUNT = 5;
     const trails = [];
@@ -119,7 +168,7 @@ export default function App() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (isFinePointer) {
       if (!reduceMotion) {
-        for (let i = 0; i < GHOST_COUNT; i++) {
+        for (let i = 0; ENABLE_GHOSTS && i < GHOST_COUNT; i++) {
           const el = document.createElement('div');
           const color = GHOST_COLORS[i % GHOST_COLORS.length];
           el.className = 'cursor-ghost';
@@ -149,7 +198,7 @@ export default function App() {
             depth: 0.3 + Math.random() * 0.7,
           });
         }
-        for (let i = 0; i < TRAIL_COUNT; i++) {
+        for (let i = 0; CUSTOM_CURSOR && i < TRAIL_COUNT; i++) {
           const el = document.createElement('div');
           el.className = 'cursor-trail';
           el.style.opacity = String(0.55 - i * 0.09);
@@ -157,18 +206,22 @@ export default function App() {
           trails.push({ el, x: mouseX, y: mouseY, ease: 0.16 - i * 0.025 });
         }
       }
-      dot = document.createElement('div');
-      dot.className = 'cursor-dot';
-      document.body.appendChild(dot);
-      document.body.classList.add('custom-cursor-active');
+      if (CUSTOM_CURSOR) {
+        dot = document.createElement('div');
+        dot.className = 'cursor-dot';
+        document.body.appendChild(dot);
+        document.body.classList.add('custom-cursor-active');
+      }
       window.addEventListener('mousemove', onMove);
+      window.addEventListener('click', onClick);
+      lenis.on('scroll', onScrollState);
       document.addEventListener('mouseover', onOver);
       document.addEventListener('mouseout', onOut);
 
       const renderCursor = () => {
         dotX += (mouseX - dotX) * 0.22;
         dotY += (mouseY - dotY) * 0.22;
-        dot.style.transform = `translate(${dotX}px, ${dotY}px)`;
+        if (dot) dot.style.transform = `translate(${dotX}px, ${dotY}px)`;
         scrollVel *= 0.92;
         const push = Math.max(-80, Math.min(80, scrollVel * 3));
         trails.forEach((t, i) => {
@@ -186,17 +239,36 @@ export default function App() {
             buildQueue.splice(i, 1);
           }
         }
-        while (buildQueue.length) {
+        while (!orbiting && buildQueue.length) {
           const free = ghosts.find((g) => !g.job);
           if (!free) break;
           free.job = buildQueue.shift();
           free.phase = 'fly';
         }
-        ghosts.forEach((g) => {
+        // Semua selesai ngebuild + sudah di dasar halaman -> mulai mengitari cursor
+        const busy = buildQueue.length > 0 || ghosts.some((g) => g.job);
+        if (ghosts.length > 0 && !orbiting && armed && atBottom && !busy) {
+          if (!idleSince) idleSince = now;
+          else if (now - idleSince > GATHER_DELAY_MS) {
+            startOrbit();
+            idleSince = 0;
+          }
+        } else {
+          idleSince = 0;
+        }
+
+        ghosts.forEach((g, gi) => {
           let tx = g.bx + Math.cos(now * g.sp + g.ph) * g.ax;
           let ty = g.by + Math.sin(now * g.sp * 1.3 + g.ph) * g.ay - push * g.depth;
-          let k = 0.05;
-          if (g.job) {
+          let k = now - releasedAt < 700 ? 0.1 : 0.05; // sedikit lebih kencang saat bubar
+          if (orbiting) {
+            // berputar pelan mengelilingi cursor asli, mengikuti ke mana pun cursor bergerak
+            const rad = (hoverUI ? ORBIT_R_HOVER : ORBIT_R) + Math.sin(now * 0.003 + gi) * 3;
+            const a = now * 0.0015 + (gi * Math.PI * 2) / ghosts.length;
+            tx = mouseX + Math.cos(a) * rad;
+            ty = mouseY + Math.sin(a) * rad;
+            k = 0.14;
+          } else if (g.job) {
             const el = g.job.el;
             const r = el.getBoundingClientRect();
             k = 0.2;
@@ -290,6 +362,7 @@ export default function App() {
       document.removeEventListener('click', handleAnchor);
       revealObserver.disconnect();
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('click', onClick);
       document.removeEventListener('mouseover', onOver);
       document.removeEventListener('mouseout', onOut);
       trails.forEach((t) => t.el.remove());
